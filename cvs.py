@@ -9,7 +9,7 @@ def procesar_cv(ruta_cv):
             texto += pagina.extract_text() or ""
 
     # Ejemplo básico: buscar palabras clave
-    palabras_clave = ["Python", "Flask", "IA", "Machine Learning", "Django", "SQL"]
+    palabras_clave = ["Python", "Flask", "IA", "Django", "SQL"]
     conteo = {palabra: texto.lower().count(palabra.lower()) for palabra in palabras_clave}
     puntaje = sum(conteo.values()) * 10
 

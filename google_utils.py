@@ -1,9 +1,9 @@
 import gspread
 import pandas as pd
 import os
-import json # Importación necesaria para manejar el JSON de la variable de entorno
+import json 
 
-# Cliente global, inicializado para leer credenciales de Entorno o Archivo.
+
 gc = None
 try:
     # 1. Intentar leer de la variable de entorno (para Render)
@@ -19,7 +19,6 @@ try:
         print("Google Sheets: Cliente inicializado desde archivo local.")
 except Exception as e:
     print(f"Error CRÍTICO al inicializar el cliente de Google Sheets: {e}")
-    # gc permanece como None.
 
 def leer_encuestas_google(hoja_id):
     """
@@ -31,7 +30,7 @@ def leer_encuestas_google(hoja_id):
 
     try:
         sh = gc.open_by_key(hoja_id)
-        worksheet = sh.sheet1  # primera pestaña
+        worksheet = sh.sheet1  
         data = worksheet.get_all_records()
 
         if not data:

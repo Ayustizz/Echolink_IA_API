@@ -1,10 +1,3 @@
-# ============================================================
-#  📦 API IA_Echolinks v3 (segura con API Key)
-#  - Analiza encuestas desde Google Sheets
-#  - Analiza CVs nuevos sin mezclar con anteriores
-#  - Guarda resultados históricos
-#  - Protegida con x-api-key
-# ============================================================
 
 from flask import Flask, request, jsonify
 from encuesta import analizar_encuestas_google
@@ -17,7 +10,7 @@ import pandas as pd
 # ------------------------------------------------------------
 app = Flask(__name__)
 
-# ID de la hoja de Google Sheets (reemplaza por la tuya si cambia)
+# ID de la hoja de Google Sheets con las encuestas
 HOJA_ID = "1zTXTBLeewcL-ENbh_W1zvbBaTZbnp9yT7hQFmp4xJdc"
 
 # Carpeta temporal donde se guardan los CVs subidos
@@ -25,13 +18,12 @@ CARPETA_CVS = "cvs"
 os.makedirs(CARPETA_CVS, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = CARPETA_CVS
 
-# Clave secreta de la API (puede configurarse en Render o usar valor por defecto)
+# Clave API 
 API_KEY = os.environ.get("API_KEY", "clave-secreta")
 
 
-# ------------------------------------------------------------
+
 # 2️⃣ Middleware de autenticación
-# ------------------------------------------------------------
 def requiere_api_key(func):
     """Verifica que la solicitud incluya la clave correcta en los encabezados."""
     def wrapper(*args, **kwargs):
@@ -43,18 +35,15 @@ def requiere_api_key(func):
     return wrapper
 
 
-# ------------------------------------------------------------
 # 3️⃣ Endpoint de prueba
-# ------------------------------------------------------------
+
 @app.route('/api/saludo', methods=['GET'])
 def saludo():
     """Verifica que la API esté en funcionamiento."""
     return jsonify({"mensaje": "✅ API IA_Echolinks funcionando correctamente"}), 200
 
 
-# ------------------------------------------------------------
 # 4️⃣ Endpoint para obtener estadísticas de encuestas
-# ------------------------------------------------------------
 @app.route('/api/estadisticas', methods=['GET'])
 @requiere_api_key
 def obtener_estadisticas():
@@ -73,9 +62,8 @@ def obtener_estadisticas():
         }), 500
 
 
-# ------------------------------------------------------------
+
 # 5️⃣ Endpoint para subir CVs nuevos y analizarlos
-# ------------------------------------------------------------
 @app.route('/api/subir_cv', methods=['POST'])
 @requiere_api_key
 def subir_cv():
@@ -92,19 +80,19 @@ def subir_cv():
         if not archivos:
             return jsonify({"estado": "error", "mensaje": "No se recibió ningún archivo"}), 400
 
-        # 1️⃣ Limpiamos la carpeta para evitar combinar con anteriores
+        # 1️⃣ se limpia la carpeta para evitar combinar con anteriores
         for f in os.listdir(CARPETA_CVS):
             os.remove(os.path.join(CARPETA_CVS, f))
 
-        # 2️⃣ Guardamos los nuevos CVs
+        # 2️⃣ se guardan los nuevos CVs
         for archivo in archivos:
             ruta = os.path.join(app.config["UPLOAD_FOLDER"], archivo.filename)
             archivo.save(ruta)
 
-        # 3️⃣ Procesamos los CVs nuevos
+        # 3️⃣ Se procesan los CVs nuevos
         resultados_nuevos = procesar_carpeta_cvs(CARPETA_CVS)
 
-        # 4️⃣ Guardamos resultados en un CSV histórico
+        # 4️⃣ se Guardan resultados en un CSV histórico
         historial_path = "resultados_cvs.csv"
         df_nuevos = pd.DataFrame(resultados_nuevos)
 
@@ -116,7 +104,7 @@ def subir_cv():
 
         df_combinado.to_csv(historial_path, index=False)
 
-        # 5️⃣ Devolvemos solo los resultados nuevos
+        # 5️⃣ se Devuelven los resultados nuevos
         return jsonify({
             "estado": "exito",
             "mensaje": f"{len(archivos)} CV(s) analizado(s) correctamente.",
@@ -130,9 +118,8 @@ def subir_cv():
         }), 500
 
 
-# ------------------------------------------------------------
+
 # 6️⃣ Ejecutar el servidor
-# ------------------------------------------------------------
 if __name__ == "__main__":
     puerto = int(os.environ.get("PORT", 5000))
     print(f"🚀 Servidor iniciado en el puerto {puerto}")
